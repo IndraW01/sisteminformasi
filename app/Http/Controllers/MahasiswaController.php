@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class MahasiswaController extends Controller
 {
@@ -105,7 +106,10 @@ class MahasiswaController extends Controller
      */
     public function edit(Mahasiswa $mahasiswa)
     {
-        //
+        return view('Mahasiswa.edit', [
+            'mahasiswa' => $mahasiswa,
+            'jurusans' => collect(['Sistem Informasi', 'Informatika', 'Teknik Lingkungan', 'Teknik Industri', 'Teknik Elektro'])
+        ]);
     }
 
     /**
@@ -117,7 +121,68 @@ class MahasiswaController extends Controller
      */
     public function update(Request $request, Mahasiswa $mahasiswa)
     {
-        //
+        $filters = [
+            'name' => 'required|max:50',
+            'nim' => 'required|max:12|unique:mahasiswas,nim,' . $mahasiswa->id,
+            'email' => 'required|email|unique:users,email,' . $mahasiswa->user_id,
+            'jenis_kelamin' => 'required|in:L,P',
+            'jurusan' => 'required',
+            'alamat' => 'required'
+        ];
+
+        // dd($validateData = $request->validate($filters));
+
+        if($request->password != $mahasiswa->user->password) {
+            $filters['password'] = 'min:3';
+        }
+
+        if($request->file('gambar')) {
+            $filters['gambar'] = 'image|max:1024';
+        }
+
+        $validateData = $request->validate($filters);
+
+        if($request->file('gambar')) {
+            Storage::delete($mahasiswa->user->gambar);
+            $validateData['gambar'] = $request->file('gambar')->store('mahasiswa-img');
+        }
+
+        if($request->password != $mahasiswa->user->password) {
+            $validateData['password'] = Hash::make($request->password);
+        }
+
+        // dd($validateData);
+
+        DB::beginTransaction();
+
+        try {
+            $user = User::find($mahasiswa->user_id);
+            $user->name = $validateData['name'];
+            $user->email = $validateData['email'];
+            $user->jenis_kelamin = $validateData['jenis_kelamin'];
+            $user->alamat = $validateData['alamat'];
+            if($request->password != $mahasiswa->user->password) {
+                $user->password = $validateData['password'];
+            }
+            if($request->file('gambar')) {
+                $user->gambar = $validateData['gambar'];
+            }
+            $user->save();
+
+            $mahasiswaUp = Mahasiswa::find($mahasiswa->id);
+            $mahasiswaUp->nim = $validateData['nim'];
+            $mahasiswaUp->jurusan = $validateData['jurusan'];
+
+            $mahasiswaUp->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            echo 'gagal';
+        }
+
+        return redirect()->route('mahasiswas.index')->with('success', "Data Mahasiswa $request->name Berhasil diubah");
+
     }
 
     /**
@@ -128,6 +193,11 @@ class MahasiswaController extends Controller
      */
     public function destroy(Mahasiswa $mahasiswa)
     {
-        //
+        $user = User::where('id', $mahasiswa->user_id)->pluck('gambar')->first();
+        Storage::delete($user);
+
+        User::destroy($mahasiswa->user_id);
+
+        return redirect()->route('mahasiswas.index')->with('success', "Data Mahasiswa " . $mahasiswa->user->name . " Berhasil dihapus");
     }
 }

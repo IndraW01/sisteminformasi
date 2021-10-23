@@ -49,7 +49,11 @@
                         <td>
                             <a href="{{ route('mahasiswas.show', ['mahasiswa' => $mahasiswa->nim])}}" class="badge bg-info"><i class="fas fa-fw fs-5 fa-eye"></i></a>
                             <a href="{{ route('mahasiswas.edit', ['mahasiswa' => $mahasiswa->nim]) }}" class="badge bg-warning"><i class="fas fa-fw fa-pen fs-5"></i></a>
-                            <a href="{{ route('mahasiswas.destroy', ['mahasiswa' => $mahasiswa->nim]) }}" class="badge bg-danger" onclick="return confirm('Yakin Menghapus? ')"><i class="fas fa-fw fa-trash-alt fs-5"></i></a>
+                            <form action="{{ route('mahasiswas.destroy', ['mahasiswa' => $mahasiswa->nim]) }}" class="d-inline" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="badge bg-danger border-0" onclick="return confirm('Yakin Menghapus? ')"><i class="fas fa-fw fa-trash-alt fs-5"></i></button>
+                            </form>
                         </td>
                     </tr>
                     @empty
