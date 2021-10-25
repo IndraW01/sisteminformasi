@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\MatkulController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,7 +16,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('dashboard');
-});
+    return view('/dashboard');
+})->name('dashboard.index');
 
 Route::resource('/mahasiswas', MahasiswaController::class)->scoped(['mahasiswa' => 'nim']);
+
+Route::resource('/matkuls', MatkulController::class)->scoped(['matkul' => 'kode_matkul'])->except('show');

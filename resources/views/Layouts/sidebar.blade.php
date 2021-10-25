@@ -12,8 +12,8 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
-    <li class="nav-item">
-        <a class="nav-link" href="index.html">
+    <li class="nav-item {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('dashboard.index') }}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
     </li>
@@ -32,6 +32,13 @@
             aria-expanded="true" aria-controls="collapseTwo">
             <i class="fas fa-fw fa-user"></i>
             <span>Mahasiswa</span>
+        </a>
+    </li>
+    <li class="nav-item {{ request()->routeIs('matkuls.*') ? 'active' : '' }}">
+        <a class="nav-link collapsed" href="{{ route('matkuls.index') }}" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+            <i class="fas fa-fw fa-book"></i>
+            <span>Mata Kuliah</span>
         </a>
     </li>
 
